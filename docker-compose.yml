@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: bitnami/mariadb:latest
+    environment:
+      - MARIADB_ROOT_PASSWORD=myrootpass
+    volumes:
+      - mariadb_data:/bitnami/mariadb
+    networks:
+      - moodle-net
+
+  moodle:
+    image: bitnami/moodle:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - MOODLE_DATABASE_HOST=mariadb
+      - MOODLE_DATABASE_PORT_NUMBER=3306
+      - MOODLE_DATABASE_USER=root
+      - MOODLE_DATABASE_PASSWORD=myrootpass
+    volumes:
+      - moodle_data:/bitnami/moodle
+    depends_on:
+      - mariadb
+    networks:
+      - moodle-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_PORT=3306
+    depends_on:
+      - mariadb
+    networks:
+      - moodle-net
+
+volumes:
+  moodle_data:
+  mariadb_data:
+
+networks:
+  moodle-net:
+    driver: bridge
